@@ -1,17 +1,17 @@
-'use strict';
 
-const gutil = require('gulp-util');
-const through = require('through2');
-const applySourceMap = require('vinyl-sourcemaps-apply');
-const esperanto = require('esperanto');
-const path = require('path');
-const slash = require('slash');
+var gutil = require('gulp-util');
+var through = require('through2');
+var applySourceMap = require('vinyl-sourcemaps-apply');
+var esperanto = require('esperanto');
+var path = require('path');
+var slash = require('slash');
+var objectAssign = require('object-assign');
 
 module.exports = function(opts) {
   opts = opts || { type: 'amd' };
 
   // amd => toAmd, cjs => toCjs, umd => toUmd
-  let fn = 'to' + opts.type.charAt(0).toUpperCase() + opts.type.slice(1).toLowerCase();
+  var fn = 'to' + opts.type.charAt(0).toUpperCase() + opts.type.slice(1).toLowerCase();
 
   // file = 
   return through.obj(function(file, enc, cb) {
@@ -27,19 +27,19 @@ module.exports = function(opts) {
     }
 
     // path.pasix so the join happens always with '/' and not '\\' on windows machines
-    let pathParsed = path.posix.parse(file.relative);
-    let amdName = path.join(pathParsed.dir, pathParsed.name)
+    var pathParsed = path.posix.parse(file.relative);
+    var amdName = path.join(pathParsed.dir, pathParsed.name)
     amdName = slash(amdName);
 
     try {
-      let fileOpts = Object.assign({}, opts, {
+      var fileOpts = objectAssign({}, opts, {
         souceMap: !!file.sourceMap,
         sourceMapSource: file.relative,
         sourceMapFile: file.relative,
-        amdName
+        amdName: amdName
       });
 
-      let res = esperanto[fn](file.contents.toString(), fileOpts);
+      var res = esperanto[fn](file.contents.toString(), fileOpts);
 
       if (file.sourceMap && res.map) {
         applySourceMap(file, res.map);

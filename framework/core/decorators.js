@@ -21,6 +21,9 @@ export function computed(...args) {
       return;
     }
 
+    // all computed properties should be enumerable
+    descriptor.enumerable = true;
+
     descriptor.get = function() {
       let table = getCacheForObject(this, computedPropertyCache);
       if (key in table) {

@@ -232,6 +232,9 @@ define('core/decorators', ['exports', 'core/cache', 'core/symbols'], function (e
         return;
       }
 
+      // all computed properties should be enumerable
+      descriptor.enumerable = true;
+
       descriptor.get = function () {
         var table = cache.getCacheForObject(this, cache.computedPropertyCache);
         if (key in table) {
@@ -464,7 +467,9 @@ define('core/observable', ['exports', 'core/mixin-base', 'core/symbols', 'core/m
     target.prototype.constructor = function () {
       var _this = this;
 
-      this.isObservable = true;
+      Object.defineProperty(this, 'isObservable', {
+        value: true
+      });
 
       var thisComputedPropertyCache = ___cache.getCacheForObject(this, ___cache.computedPropertyCache);
 

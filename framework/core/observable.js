@@ -101,7 +101,9 @@ export default function observableMixin(target) {
   let originalConstructor = target;
 
   target.prototype.constructor = function(...args) {
-    this.isObservable = true;
+    Object.defineProperty(this, 'isObservable', {
+      value: true
+    });
 
     let thisComputedPropertyCache = getCacheForObject(this, computedPropertyCache);
 
