@@ -10,6 +10,8 @@ import { meta } from './symbols';
 export function computed(...args) {
   return function(target, key, descriptor) {
 
+    console.log(target);
+
     let depKeysCache = getCacheForObject(target, dependentKeysCache);
     depKeysCache[key] = args;
 
@@ -27,7 +29,6 @@ export function computed(...args) {
     descriptor.get = function() {
       let table = getCacheForObject(this, computedPropertyCache);
       if (key in table) {
-        console.log('from cache');
         return table[key];
       }
 

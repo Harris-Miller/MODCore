@@ -100,22 +100,27 @@ export default function observableMixin(target) {
   addMixin(target, observableObject);
   let originalConstructor = target;
 
-  target.prototype.constructor = function(...args) {
-    Object.defineProperty(this, 'isObservable', {
-      value: true
-    });
+  Object.defineProperty(target.prototype, 'isObservable', {
+    value: true
+  });
 
+  target.prototype.constructor = function(...args) {
+
+    // get the computed properties cache for this
     let thisComputedPropertyCache = getCacheForObject(this, computedPropertyCache);
 
     // first, figure out all the computed keys for this object and who owns them
     let keyOwners = findComputedKeys(Object.getPrototypeOf(this).constructor);
+
+    // and for all the owners of the computed keys...
     for (let owner of keyOwners) {
-      // now get the dependentKeysCache for each key owner
-      console.log(owner);
+      // get the dependentKeysCache for each
       let cacheForOwner = dependentKeysCache.get(owner.obj);
       // and for each key in cacheForOwner
       for (let computedKey in cacheForOwner) {
+        // for each computedKey in cacheForOwn
         for (let depedentKey of cacheForOwner[computedKey]) {
+          // add an observer for it's dependentKeys
           this.addObserver(depedentKey, null, function(value) {
             delete thisComputedPropertyCache[computedKey];
           });
@@ -123,10 +128,7 @@ export default function observableMixin(target) {
       }
     }
 
-    // TODO: figure out how to clear out computed properties cache on change of dependent key values
-
-    // first, find all computed keys and their dependent keys in this chain
-
+    // and call the original constructor
     originalConstructor.call(this, ...args);
   }
 }

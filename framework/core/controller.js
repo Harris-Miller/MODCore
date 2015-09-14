@@ -37,6 +37,7 @@ export default class Controller extends ModObject {
       let of = $elm.data('of');
 
       if (key in model) {
+        // add data down observer
         model.addObserver(key, this, function(value) {
           // console.log(value);
           if (to === 'text') {
@@ -53,6 +54,15 @@ export default class Controller extends ModObject {
             $elm.prop(of, value);
           }
         });
+
+        // if element is editable, add data up observer (two-way binding)
+        let tagName = $elm.prop('tagName').toLowerCase();
+        if (editableTags.indexOf(tagName) >= 0) {
+          $elm.on('change, input', function(e) {
+            let value = $elm.val();
+            model.set(key, value);
+          });
+        }
       }
     });
   }
@@ -98,3 +108,9 @@ function parseTemplate(template) {
   // for right now, just wrap whatever is passed in jQuery
   return jQuery(template);
 }
+
+const editableTags = [
+  'input',
+  'textarea',
+  'select'
+];

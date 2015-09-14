@@ -10,6 +10,12 @@
 
 	<h2>Hello! <span data-bind="first" data-to="text"></span> <span data-bind="last" data-to="text"></span></h2>
 
+	<p>
+		<label>First: <input type="text" data-bind="first" data-to="prop" data-of="value"></label>
+		<br>
+		<label>Last: <input type="text" data-bind="last" data-to="prop" data-of="value"></label>
+	</p>
+
 	<h3>Computed: <span data-bind="full" data-to="text"></span></h3>
 
 	<script src="../node_modules/babel-core/external-helpers.js"></script>
@@ -29,22 +35,6 @@
 			template: 'body',
 			model: me
 		});
-
-		// console.log(me);
-
-		// function observerTest(id) {
-		// 	var $elm = $('#' + id);
-		// 	return function (value) {
-		// 		$elm.text(value);
-		// 	}
-		// }
-
-		// me.addObserver('first', null, observerTest('first'));
-		// me.addObserver('last', null, observerTest('last'));
-
-		// me.set('first', 'WHAT!');
-
-		// console.log(me.full);
 	</script>
 </body>
 </html>

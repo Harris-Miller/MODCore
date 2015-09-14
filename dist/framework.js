@@ -116,6 +116,7 @@ define('core/controller', ['exports', 'core/mod-object'], function (exports, Mod
           var of = $elm.data('of');
 
           if (key in model) {
+            // add data down observer
             model.addObserver(key, _this, function (value) {
               // console.log(value);
               if (to === 'text') {
@@ -130,6 +131,15 @@ define('core/controller', ['exports', 'core/mod-object'], function (exports, Mod
                   $elm.prop(of, value);
                 }
             });
+
+            // if element is editable, add data up observer (two-way binding)
+            var tagName = $elm.prop('tagName').toLowerCase();
+            if (editableTags.indexOf(tagName) >= 0) {
+              $elm.on('change, input', function (e) {
+                var value = $elm.val();
+                model.set(key, value);
+              });
+            }
           }
         });
       }
@@ -170,6 +180,8 @@ define('core/controller', ['exports', 'core/mod-object'], function (exports, Mod
     return jQuery(template);
   }
 
+  var editableTags = ['input', 'textarea', 'select'];
+
 });
 define('core/core-object', ['exports', 'core/cache', 'core/symbols'], function (exports, cache, symbols) {
 
@@ -203,63 +215,64 @@ define('core/core-object', ['exports', 'core/cache', 'core/symbols'], function (
 });
 define('core/decorators', ['exports', 'core/cache', 'core/symbols'], function (exports, cache, symbols) {
 
-  'use strict';
+    'use strict';
 
-  exports.computed = computed;
-  exports.observe = observe;
+    exports.computed = computed;
+    exports.observe = observe;
 
-  /**
-   * sets a computed property to be cached, and recomputed on change of dependent keys
-   *
-   *
-   */
+    /**
+     * sets a computed property to be cached, and recomputed on change of dependent keys
+     *
+     *
+     */
 
-  function computed() {
-    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-      args[_key] = arguments[_key];
-    }
-
-    return function (target, key, descriptor) {
-
-      var depKeysCache = cache.getCacheForObject(target, cache.dependentKeysCache);
-      depKeysCache[key] = args;
-
-      // only works on getters and setters
-      var getter = descriptor.get;
-      var setter = descriptor.set;
-
-      if (!descriptor.get) {
-        return;
-      }
-
-      // all computed properties should be enumerable
-      descriptor.enumerable = true;
-
-      descriptor.get = function () {
-        var table = cache.getCacheForObject(this, cache.computedPropertyCache);
-        if (key in table) {
-          console.log('from cache');
-          return table[key];
+    function computed() {
+        for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+            args[_key] = arguments[_key];
         }
 
-        return table[key] = getter.call(this);
-      };
+        return function (target, key, descriptor) {
 
-      descriptor.set = function (value) {
-        var table = cache.getCacheForObject(this, cache.computedPropertyCache);
-        setter.call(this, value);
-        table[(key, value)];
-      };
+            console.log(target);
 
-      // TODO: how do we clear cache on dependent keys on change of those??
+            var depKeysCache = cache.getCacheForObject(target, cache.dependentKeysCache);
+            depKeysCache[key] = args;
 
-      return descriptor;
-    };
-  }
+            // only works on getters and setters
+            var getter = descriptor.get;
+            var setter = descriptor.set;
 
-  function observe() {
-    return function (target, key, descriptor) {};
-  }
+            if (!descriptor.get) {
+                return;
+            }
+
+            // all computed properties should be enumerable
+            descriptor.enumerable = true;
+
+            descriptor.get = function () {
+                var table = cache.getCacheForObject(this, cache.computedPropertyCache);
+                if (key in table) {
+                    return table[key];
+                }
+
+                return table[key] = getter.call(this);
+            };
+
+            descriptor.set = function (value) {
+                var table = cache.getCacheForObject(this, cache.computedPropertyCache);
+                setter.call(this, value);
+                table[(key, value)];
+            };
+
+            // TODO: how do we clear cache on dependent keys on change of those??
+
+            return descriptor;
+        };
+    }
+
+    function observe() {
+        return function (target, key, descriptor) {};
+    }
 
 });
 define('core/mixin-base', ['exports'], function (exports) {
@@ -464,17 +477,20 @@ define('core/observable', ['exports', 'core/mixin-base', 'core/symbols', 'core/m
     addMixin['default'](target, observableObject);
     var originalConstructor = target;
 
+    Object.defineProperty(target.prototype, 'isObservable', {
+      value: true
+    });
+
     target.prototype.constructor = function () {
       var _this = this;
 
-      Object.defineProperty(this, 'isObservable', {
-        value: true
-      });
-
+      // get the computed properties cache for this
       var thisComputedPropertyCache = ___cache.getCacheForObject(this, ___cache.computedPropertyCache);
 
       // first, figure out all the computed keys for this object and who owns them
       var keyOwners = findComputedKeys(Object.getPrototypeOf(this).constructor);
+
+      // and for all the owners of the computed keys...
       var _iteratorNormalCompletion2 = true;
       var _didIteratorError2 = false;
       var _iteratorError2 = undefined;
@@ -483,12 +499,12 @@ define('core/observable', ['exports', 'core/mixin-base', 'core/symbols', 'core/m
         for (var _iterator2 = keyOwners[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
           var owner = _step2.value;
 
-          // now get the dependentKeysCache for each key owner
-          console.log(owner);
+          // get the dependentKeysCache for each
           var cacheForOwner = ___cache.dependentKeysCache.get(owner.obj);
           // and for each key in cacheForOwner
 
           var _loop = function (computedKey) {
+            // for each computedKey in cacheForOwn
             _iteratorNormalCompletion3 = true;
             _didIteratorError3 = false;
             _iteratorError3 = undefined;
@@ -497,6 +513,7 @@ define('core/observable', ['exports', 'core/mixin-base', 'core/symbols', 'core/m
               for (_iterator3 = cacheForOwner[computedKey][Symbol.iterator](); !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
                 var depedentKey = _step3.value;
 
+                // add an observer for it's dependentKeys
                 _this.addObserver(depedentKey, null, function (value) {
                   delete thisComputedPropertyCache[computedKey];
                 });
@@ -530,9 +547,7 @@ define('core/observable', ['exports', 'core/mixin-base', 'core/symbols', 'core/m
           }
         }
 
-        // TODO: figure out how to clear out computed properties cache on change of dependent key values
-
-        // first, find all computed keys and their dependent keys in this chain
+        // and call the original constructor
       } catch (err) {
         _didIteratorError2 = true;
         _iteratorError2 = err;
