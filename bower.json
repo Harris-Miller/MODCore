@@ -1,0 +1,23 @@
+{
+  "name": "modecore-testing",
+  "main": "index.js",
+  "version": "0.0.0",
+  "authors": [
+    "Harris Miller <harrismiller08@gmail.com>"
+  ],
+  "moduleType": [
+    "amd"
+  ],
+  "license": "ISC",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "eventemitter2": "~0.4.14",
+    "loader.js": "ember-cli/loader.js#3.2.1"
+  }
+}
