@@ -7,7 +7,7 @@ export default class Controller extends ModObject {
 
     // console.log(this);
 
-    // this._normalizeModel();
+    this._normalizeModel();
     this._parseTemplate();
     this.render();
   }

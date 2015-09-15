@@ -15,9 +15,9 @@ function Meta(obj) {
 export const EMPTY_META = new Meta(null);
 
 export function meta(obj) {
-  let rtn = new Meta(obj);
+  let metaObj = new Meta(obj);
 
-  rtn[metaSymbol] = rtn;
+  obj[metaSymbol] = metaObj;
 
-  return rtn;
+  return obj;
 }

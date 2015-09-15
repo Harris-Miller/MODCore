@@ -73,7 +73,7 @@ define('core/controller', ['exports', 'core/mod-object'], function (exports, Mod
 
       // console.log(this);
 
-      // this._normalizeModel();
+      this._normalizeModel();
       this._parseTemplate();
       this.render();
     }
@@ -692,23 +692,25 @@ define('helpers/meta', ['exports', 'helpers/metal', 'core/symbols'], function (e
   exports.meta = meta;
 
   function Meta(obj) {
-    this.watching = {};
-    this.cache = undefined;
-    this.source = obj;
-    this.deps = undefined;
-    this.listeners = undefined;
-    this.bindings = undefined;
-    this.values = undefined;
+    // this.watching = {};
+    // this.cache = undefined;
+    // this.source = obj;
+    // this.deps = undefined;
+    // this.listeners = undefined;
+    // this.bindings = undefined;
+    // this.values = undefined;
+    this.computedCache = Object.create(null);
+    this.observers = Object.create(null);
   }
 
   var EMPTY_META = new Meta(null);
 
   function meta(obj) {
-    var rtn = new Meta(obj);
+    var metaObj = new Meta(obj);
 
-    rtn[symbols.meta] = rtn;
+    obj[symbols.meta] = metaObj;
 
-    return rtn;
+    return obj;
   }
 
   exports.EMPTY_META = EMPTY_META;
