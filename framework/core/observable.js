@@ -1,17 +1,18 @@
-/* global EventEmitter2 */
 
 import addMixin from './mixin-base';
 import { meta } from './symbols';
 import ModObject from './mod-object';
-import { getCacheForObject, computedPropertyCache, dependentKeysCache} from './cache';
-import { isNone, isPlainObject, isEmptyObject } from '../helpers/util';
-
-/**
- *
- *
- *
- */
-const observerCache = new WeakMap();
+import {
+  getCacheForObject,
+  observerCache,
+  computedPropertyCache,
+  dependentKeysCache
+} from './cache';
+import {
+  isNone,
+  isPlainObject,
+  isEmptyObject
+} from '../helpers/util';
 
 /**
  *

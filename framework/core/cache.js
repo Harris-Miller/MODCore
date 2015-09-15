@@ -6,11 +6,13 @@ function getCacheForObject(obj, cache) {
   return cache.get(obj);
 }
 
+const observerCache = new WeakMap();
 const computedPropertyCache = new WeakMap();
 const dependentKeysCache = new WeakMap();
 
 export {
   getCacheForObject,
+  observerCache,
   computedPropertyCache,
   dependentKeysCache
 };
