@@ -4,6 +4,7 @@ import addMixin from './mixin-base';
 import { meta } from './symbols';
 import ModObject from './mod-object';
 import { getCacheForObject, computedPropertyCache, dependentKeysCache} from './cache';
+import { isNone, isPlainObject, isEmptyObject } from '../helpers/util';
 
 /**
  *
@@ -90,9 +91,41 @@ const observableObject = {
   },
 
   set(key, value) {
+    // TODO: defer this to helpers.properties#set
     this[key] = value;
     fireObserversForKey(this, key);
-    return this;
+    return value;
+  },
+
+  getProperties(...keys) {
+    if (!keys.length) {
+      return null;
+    }
+
+    if (Array.isArray(keys[0])) {
+      keys = keys[0];
+    }
+
+    let result = {};
+
+    for(let key of keys) {
+      result[key] = this.get(key);
+    }
+
+    return result;
+  },
+
+  setProperties(obj) {
+    // TODO: defer this to helpers.properties#setProperties
+    if (isNone(obj) || typeof obj !== 'object' || !isPlainObject(obj) || isEmptyObject(obj)) {
+      return obj;
+    }
+
+    for (let key in obj) {
+      set(key, obj[key]);
+    }
+
+    return obj;
   }
 };
 

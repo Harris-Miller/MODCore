@@ -1,9 +1,12 @@
 
 import cache from './cache';
-import { meta } from './symbols';
+import { meta } from '../helpers/meta';
 
 export default class CoreObject {
   constructor(instanceProperties) {
+
+    meta(this);
+
     if (instanceProperties !== undefined) {
       Object.assign(this, instanceProperties);
     }
@@ -13,11 +16,3 @@ export default class CoreObject {
 
   }
 }
-
-Object.defineProperty(CoreObject.prototype, meta, {
-  value: {
-    dependentKeys: {}
-  }
-});
-
-

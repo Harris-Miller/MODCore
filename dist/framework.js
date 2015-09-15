@@ -183,7 +183,7 @@ define('core/controller', ['exports', 'core/mod-object'], function (exports, Mod
   var editableTags = ['input', 'textarea', 'select'];
 
 });
-define('core/core-object', ['exports', 'core/cache', 'core/symbols'], function (exports, cache, symbols) {
+define('core/core-object', ['exports', 'core/cache', 'helpers/meta'], function (exports, cache, meta) {
 
   'use strict';
 
@@ -191,6 +191,8 @@ define('core/core-object', ['exports', 'core/cache', 'core/symbols'], function (
   var CoreObject = (function () {
     function CoreObject(instanceProperties) {
       babelHelpers.classCallCheck(this, CoreObject);
+
+      meta.meta(this);
 
       if (instanceProperties !== undefined) {
         Object.assign(this, instanceProperties);
@@ -205,12 +207,6 @@ define('core/core-object', ['exports', 'core/cache', 'core/symbols'], function (
   })();
 
   exports['default'] = CoreObject;
-
-  Object.defineProperty(CoreObject.prototype, symbols.meta, {
-    value: {
-      dependentKeys: {}
-    }
-  });
 
 });
 define('core/decorators', ['exports', 'core/cache', 'core/symbols'], function (exports, cache, symbols) {
@@ -350,7 +346,7 @@ define('core/mod-object', ['exports', 'core/core-object', 'core/observable'], fu
   exports['default'] = ModObject;
 
 });
-define('core/observable', ['exports', 'core/mixin-base', 'core/symbols', 'core/mod-object', 'core/cache'], function (exports, addMixin, symbols, ModObject, ___cache) {
+define('core/observable', ['exports', 'core/mixin-base', 'core/symbols', 'core/mod-object', 'core/cache', 'helpers/util'], function (exports, addMixin, symbols, ModObject, ___cache, util) {
 
   'use strict';
 
@@ -468,9 +464,66 @@ define('core/observable', ['exports', 'core/mixin-base', 'core/symbols', 'core/m
     },
 
     set: function set(key, value) {
+      // TODO: defer this to helpers.properties#set
       this[key] = value;
       fireObserversForKey(this, key);
-      return this;
+      return value;
+    },
+
+    getProperties: function getProperties() {
+      for (var _len = arguments.length, keys = Array(_len), _key = 0; _key < _len; _key++) {
+        keys[_key] = arguments[_key];
+      }
+
+      if (!keys.length) {
+        return null;
+      }
+
+      if (Array.isArray(keys[0])) {
+        keys = keys[0];
+      }
+
+      var result = {};
+
+      var _iteratorNormalCompletion2 = true;
+      var _didIteratorError2 = false;
+      var _iteratorError2 = undefined;
+
+      try {
+        for (var _iterator2 = keys[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+          var key = _step2.value;
+
+          result[key] = this.get(key);
+        }
+      } catch (err) {
+        _didIteratorError2 = true;
+        _iteratorError2 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion2 && _iterator2['return']) {
+            _iterator2['return']();
+          }
+        } finally {
+          if (_didIteratorError2) {
+            throw _iteratorError2;
+          }
+        }
+      }
+
+      return result;
+    },
+
+    setProperties: function setProperties(obj) {
+      // TODO: defer this to helpers.properties#setProperties
+      if (util.isNone(obj) || typeof obj !== 'object' || !util.isPlainObject(obj) || util.isEmptyObject(obj)) {
+        return obj;
+      }
+
+      for (var key in obj) {
+        set(key, obj[key]);
+      }
+
+      return obj;
     }
   };
   function observableMixin(target) {
@@ -491,13 +544,13 @@ define('core/observable', ['exports', 'core/mixin-base', 'core/symbols', 'core/m
       var keyOwners = findComputedKeys(Object.getPrototypeOf(this).constructor);
 
       // and for all the owners of the computed keys...
-      var _iteratorNormalCompletion2 = true;
-      var _didIteratorError2 = false;
-      var _iteratorError2 = undefined;
+      var _iteratorNormalCompletion3 = true;
+      var _didIteratorError3 = false;
+      var _iteratorError3 = undefined;
 
       try {
-        for (var _iterator2 = keyOwners[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-          var owner = _step2.value;
+        for (var _iterator3 = keyOwners[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+          var owner = _step3.value;
 
           // get the dependentKeysCache for each
           var cacheForOwner = ___cache.dependentKeysCache.get(owner.obj);
@@ -505,13 +558,13 @@ define('core/observable', ['exports', 'core/mixin-base', 'core/symbols', 'core/m
 
           var _loop = function (computedKey) {
             // for each computedKey in cacheForOwn
-            _iteratorNormalCompletion3 = true;
-            _didIteratorError3 = false;
-            _iteratorError3 = undefined;
+            _iteratorNormalCompletion4 = true;
+            _didIteratorError4 = false;
+            _iteratorError4 = undefined;
 
             try {
-              for (_iterator3 = cacheForOwner[computedKey][Symbol.iterator](); !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-                var depedentKey = _step3.value;
+              for (_iterator4 = cacheForOwner[computedKey][Symbol.iterator](); !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+                var depedentKey = _step4.value;
 
                 // add an observer for it's dependentKeys
                 _this.addObserver(depedentKey, null, function (value) {
@@ -519,29 +572,29 @@ define('core/observable', ['exports', 'core/mixin-base', 'core/symbols', 'core/m
                 });
               }
             } catch (err) {
-              _didIteratorError3 = true;
-              _iteratorError3 = err;
+              _didIteratorError4 = true;
+              _iteratorError4 = err;
             } finally {
               try {
-                if (!_iteratorNormalCompletion3 && _iterator3['return']) {
-                  _iterator3['return']();
+                if (!_iteratorNormalCompletion4 && _iterator4['return']) {
+                  _iterator4['return']();
                 }
               } finally {
-                if (_didIteratorError3) {
-                  throw _iteratorError3;
+                if (_didIteratorError4) {
+                  throw _iteratorError4;
                 }
               }
             }
           };
 
           for (var computedKey in cacheForOwner) {
-            var _iteratorNormalCompletion3;
+            var _iteratorNormalCompletion4;
 
-            var _didIteratorError3;
+            var _didIteratorError4;
 
-            var _iteratorError3;
+            var _iteratorError4;
 
-            var _iterator3, _step3;
+            var _iterator4, _step4;
 
             _loop(computedKey);
           }
@@ -549,22 +602,22 @@ define('core/observable', ['exports', 'core/mixin-base', 'core/symbols', 'core/m
 
         // and call the original constructor
       } catch (err) {
-        _didIteratorError2 = true;
-        _iteratorError2 = err;
+        _didIteratorError3 = true;
+        _iteratorError3 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion2 && _iterator2['return']) {
-            _iterator2['return']();
+          if (!_iteratorNormalCompletion3 && _iterator3['return']) {
+            _iterator3['return']();
           }
         } finally {
-          if (_didIteratorError2) {
-            throw _iteratorError2;
+          if (_didIteratorError3) {
+            throw _iteratorError3;
           }
         }
       }
 
-      for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-        args[_key] = arguments[_key];
+      for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+        args[_key2] = arguments[_key2];
       }
 
       originalConstructor.call.apply(originalConstructor, [this].concat(args));
@@ -623,16 +676,6 @@ define('core/observable', ['exports', 'core/mixin-base', 'core/symbols', 'core/m
   }
 
 });
-define('core/property-get', function () {
-
-	'use strict';
-
-});
-define('core/property-set', function () {
-
-	'use strict';
-
-});
 define('core/symbols', ['exports'], function (exports) {
 
 	'use strict';
@@ -640,5 +683,301 @@ define('core/symbols', ['exports'], function (exports) {
 	var meta = Symbol('meta');
 
 	exports.meta = meta;
+
+});
+define('helpers/meta', ['exports', 'helpers/metal', 'core/symbols'], function (exports, metal, symbols) {
+
+  'use strict';
+
+  exports.meta = meta;
+
+  function Meta(obj) {
+    this.watching = {};
+    this.cache = undefined;
+    this.source = obj;
+    this.deps = undefined;
+    this.listeners = undefined;
+    this.bindings = undefined;
+    this.values = undefined;
+  }
+
+  var EMPTY_META = new Meta(null);
+
+  function meta(obj) {
+    var rtn = new Meta(obj);
+
+    rtn[symbols.meta] = rtn;
+
+    return rtn;
+  }
+
+  exports.EMPTY_META = EMPTY_META;
+
+});
+define('helpers/metal', ['exports', 'helpers/util'], function (exports, util) {
+
+  'use strict';
+
+  exports.uuid = uuid;
+  exports.canInvoke = canInvoke;
+  exports.tryInvoke = tryInvoke;
+  exports.makeArray = makeArray;
+
+  var _uuid = 0;
+
+  /**
+   *
+   *
+   * @method uuid
+   * @return {Number} the uuid
+   */
+
+  function uuid() {
+    return ++_uuid;
+  }
+
+  var GUID_KEY = '__mod' + +new Date();
+
+  var UNDEFINED_DESC = {
+    configurable: true,
+    writable: true,
+    enumerable: false,
+    value: undefined
+  };
+
+  var NULL_DESC = {
+    configurable: true,
+    writable: true,
+    enumerable: false,
+    value: null
+  };
+
+  var META_PROPERTY = {
+    name: '__meta__',
+    descriptor: NULL_DESC
+  };
+
+  function canInvoke(obj, methodName) {
+    return !!(obj && typeof obj[methodName] === 'function');
+  }
+
+  function tryInvoke(obj, methodName) {
+    if (canInvoke(obj, methodname)) {
+      for (var _len = arguments.length, args = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+        args[_key - 2] = arguments[_key];
+      }
+
+      return args.length ? obj[methodName].apply(obj, babelHelpers.toConsumableArray(arg)) : obj[methodName]();
+    }
+  }
+
+  function makeArray(obj) {
+    if (util.isNone(obj)) {
+      return [];
+    }
+
+    return Array.isArray(obj) ? obj : [obj];
+  }
+
+  exports.UNDEFINED_DESC = UNDEFINED_DESC;
+  exports.NULL_DESC = NULL_DESC;
+  exports.META_PROPERTY = META_PROPERTY;
+
+});
+define('helpers/properties', ['exports'], function (exports) {
+
+  'use strict';
+
+  exports.get = get;
+  exports.getProperties = getProperties;
+  exports.set = set;
+  exports.setProperties = setProperties;
+
+  function get(_x, _x2) {
+    var _again = true;
+
+    _function: while (_again) {
+      var obj = _x,
+          key = _x2;
+      chain = rtn = undefined;
+      _again = false;
+
+      // TODO: error handle obj and key params
+
+      var chain = key.splice(1, key.length - 1);
+
+      if (!(key in obj)) {
+        return obj;
+      }
+
+      var rtn = obj[key];
+
+      if (chain.length) {
+        _x = rtn;
+        _x2 = chain.join('.');
+        _again = true;
+        continue _function;
+      }
+
+      return rtn;
+    }
+  }
+
+  function getProperties(obj) {
+    for (var _len = arguments.length, keys = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+      keys[_key - 1] = arguments[_key];
+    }
+
+    var rtn = {};
+
+    if (keys.length && Array.isArray(keys[0])) {
+      keys = keys;
+    }
+
+    var _iteratorNormalCompletion = true;
+    var _didIteratorError = false;
+    var _iteratorError = undefined;
+
+    try {
+      for (var _iterator = keys[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        var key = _step.value;
+
+        rtn[key] = get(obj, key);
+      }
+    } catch (err) {
+      _didIteratorError = true;
+      _iteratorError = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion && _iterator['return']) {
+          _iterator['return']();
+        }
+      } finally {
+        if (_didIteratorError) {
+          throw _iteratorError;
+        }
+      }
+    }
+
+    return rtn;
+  }
+
+  function set(obj, key, value) {
+    // TODO
+  }
+
+  function setProperties(obj) {
+    // TODO
+  }
+
+});
+define('helpers/util', ['exports'], function (exports) {
+
+  'use strict';
+
+  exports.isNone = isNone;
+  exports.isEmpty = isEmpty;
+  exports.isBlank = isBlank;
+  exports.isPlainObject = isPlainObject;
+  exports.isEmptyObject = isEmptyObject;
+
+  function isNone(obj) {
+    return obj === null || obj === undefined;
+  }
+
+  /**
+   * Returns true if a value is `null` or an emptry string, empty array
+   * isEmpty() // true
+   * isEmpty(null) // true
+   * isEmpty(undefined) // true
+   * isEmpty('') // true
+   * isEmpty([]) // true
+   * isEmpty({}) // false
+   * isEmpty('something') // false
+   * isEmpty([1, 2, 3]) // false
+   *
+   * @method isEmpty
+   * @param obj {any} thing to check
+   */
+
+  function isEmpty(obj) {
+    var none = isNone(obj);
+    if (none) {
+      return none;
+    }
+
+    if (typeof obj.size === 'number') {
+      return !obj.size;
+    }
+
+    var objectType = typeof obj;
+
+    // strings and arrays
+    if (typeof obj.length === 'number' && objectType !== 'function') {
+      return !obj.length;
+    }
+
+    if (objectType === 'object') {
+      if (typeof obj.length === 'number') {
+        return !length;
+      }
+    }
+
+    return false;
+  }
+
+  var rWhiteSpace = /\S/;
+
+  /**
+   * An obj is blank if it is empty or a whitespace string
+   *
+   * @meethod isBlank
+   * @param obj {any} thing to check
+   */
+
+  function isBlank(obj) {
+    return isEmpty(obj) || typeof obj === 'string' && obj.match(rWhiteSpace) === null;
+  }
+
+  exports['default'] = {
+    isNone: isNone,
+    isEmpty: isEmpty,
+    isBlank: isBlank
+  };
+
+  /**
+   *
+   *
+   * @method isPlainObject
+   */
+
+  function isPlainObject(obj) {
+    // (window || false) if in test environment and global window object doesn't exist
+    if (typeof obj !== 'object' || obj.nodeType || obj === (window || false)) {
+      return false;
+    }
+
+    // this checks if the obj is a class
+    if (obj.constructor && !obj.constructor.prototype.hasOwnProperty('isPrototypeof')) {
+      return false;
+    }
+
+    // otherwise, it should be a plain object
+    return true;
+  }
+
+  /**
+   * Empty is considered an object with zero enumerable properties
+   *
+   * @method isEmptyObject
+   * @param {Object}
+   */
+
+  function isEmptyObject(obj) {
+    for (var key in obj) {
+      return false;
+    }
+    return true;
+  }
 
 });
