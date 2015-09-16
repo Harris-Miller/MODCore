@@ -3,10 +3,8 @@ import ModObject from './core/mod-object';
 import { computed } from './core/decorators';
 
 export default class Person extends ModObject {
-  constructor(first, last) {
-    super();
-    this.first = first;
-    this.last = last;
+  constructor(instanceProperties) {
+    super(instanceProperties);
   }
 
   @computed('first', 'last')

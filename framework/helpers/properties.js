@@ -8,14 +8,8 @@
  * @param key {String} the key we're looking for
  */
 export function get(obj, key) {
-
-  // TODO: error handle obj and key params
-
-  let chain = key.splice(1, key.length-1);
-
-  if (!(key in obj)) {
-    return obj;
-  }
+  key = key.split('.');
+  let chain = key.splice(1, key.length - 1);
 
   let rtn = obj[key];
 
@@ -26,24 +20,15 @@ export function get(obj, key) {
   return rtn;
 }
 
-export function getProperties(obj, ...keys) {
-  var rtn = {};
-
-  if (keys.length && Array.isArray(keys[0])) {
-    keys = keys;
-  }
-
-  for (let key of keys) {
-    rtn[key] = get(obj, key);
-  }
-
-  return rtn;
-}
-
 export function set(obj, key, value) {
-  // TODO
-}
+  key = key.split('.');
+  let chain = key.splice(1, key.length - 1);
 
-export function setProperties(obj, ...values) {
-  // TODO
+  if (chain.length) {
+    return set(obj[key], chain.join(','), value);
+  }
+
+  obj[key] = value;
+
+  return value;
 }

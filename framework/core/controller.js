@@ -55,7 +55,7 @@ export default class Controller extends ModObject {
           }
         });
 
-        // if element is editable, add data up observer (two-way binding)
+        // if element is editable, add action up observer (two-way binding)
         let tagName = $elm.prop('tagName').toLowerCase();
         if (editableTags.indexOf(tagName) >= 0) {
           $elm.on('change, input', function(e) {

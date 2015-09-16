@@ -46,8 +46,9 @@ gulp.task('compile', ['clean'], function() {
       amdName: 'test',
       absolutePaths: true
     }))
+    .pipe(sourcemaps.init())
     .pipe(concat('framework.js'))
-    // .pipe(sourcemaps.write('.'))
+    .pipe(sourcemaps.write('.'))
     .pipe(gulp.dest(destinationFolder));
 });
 

@@ -2,6 +2,8 @@
 import { UNDEFINED_DESC, NULL_DESC } from './metal';
 import { meta as metaSymbol } from '../core/symbols';
 
+// TODO: figure out what should stay and what should go
+// all this stolen from Ember's meta object
 function Meta(obj) {
   this.watching = {};
   this.cache = undefined;

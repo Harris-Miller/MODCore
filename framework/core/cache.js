@@ -1,18 +1,11 @@
 
-function getCacheForObject(obj, cache) {
+export function getCacheForObject(obj, cache) {
   if (!cache.has(obj)) {
     cache.set(obj, Object.create(null));
   }
   return cache.get(obj);
 }
 
-const observerCache = new WeakMap();
-const computedPropertyCache = new WeakMap();
-const dependentKeysCache = new WeakMap();
-
-export {
-  getCacheForObject,
-  observerCache,
-  computedPropertyCache,
-  dependentKeysCache
-};
+export const observerCache = new WeakMap();
+export const computedPropertyCache = new WeakMap();
+export const dependentKeysCache = new WeakMap();

@@ -3,6 +3,10 @@ import addMixin from './mixin-base';
 import { meta } from './symbols';
 import ModObject from './mod-object';
 import {
+  get as getProp,
+  set as setProp
+} from '../helpers/properties';
+import {
   getCacheForObject,
   observerCache,
   computedPropertyCache,
@@ -82,18 +86,19 @@ const observableObject = {
   },
 
   get(key) {
-    let rtn = this[key];
+    let rtn = getProp(this, key);
     // if plan object, wrap in CoreObject
-    // TODO: remove jQuery dependency
-    if ($.isPlainObject(rtn)) {
+    if (isPlainObject(rtn)) {
       this.key = rtn = new ModObject(rtn);
     }
     return rtn;
   },
 
   set(key, value) {
-    // TODO: defer this to helpers.properties#set
-    this[key] = value;
+    setProp(this, key, value);
+    // the set may be a key chain (eg: 'model.first');
+    // we need to get back the actual object the final key lives on
+    // and fireObserversForKey on THAT object and key
     fireObserversForKey(this, key);
     return value;
   },
@@ -123,7 +128,7 @@ const observableObject = {
     }
 
     for (let key in obj) {
-      set(key, obj[key]);
+      set(obj, obj[key]);
     }
 
     return obj;
