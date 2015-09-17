@@ -66,6 +66,32 @@ function fireObserversForKey(obj, key) {
 const observableObject = {
 
   addObserver(key, context, method) {
+
+    // even if the key does not exist on this object
+    // create an observer for it anyways, as the key may be set in the future
+
+    // first, change the property descriptor if needed
+    // meta.values[key] will not exist if we haven't already
+    let values = (this[meta].values || (this[meta].values = Object.create(null)));
+    
+    if (!(key in values)) {
+      values[key] = this[key];  
+
+      Object.defineProperty(this, key, {
+        configurable: true,
+        enumerable: true,
+        get: function() {
+          return values[key];
+        },
+        set: function(value) {
+          values[key] = value;
+          fireObserversForKey(this, key);
+          return value;
+        }
+      });
+    }
+
+    // then add the context and method to the observers cache for the key
     let cache = getObjectCache(this);
     let observersForKey = getObserversForKey(cache, key);
 

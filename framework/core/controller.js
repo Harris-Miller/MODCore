@@ -10,6 +10,7 @@ export default class Controller extends ModObject {
     this._normalizeModel();
     this._parseTemplate();
     this.render();
+    this._addModelChangeObserver();
   }
 
   _normalizeModel() {
@@ -92,6 +93,12 @@ export default class Controller extends ModObject {
           $elm.prop(of, value);
         }
       }
+    });
+  }
+
+  _addModelChangeObserver() {
+    this.addObserver('model', this, function() {
+      this.render();
     });
   }
 }
