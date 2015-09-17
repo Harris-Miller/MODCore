@@ -7,7 +7,7 @@ import { meta } from './symbols';
  *
  *
  */
-export function computed(...args) {
+export function computed(...depKeys) {
   return function(target, key, descriptor) {
 
     console.log(target);
@@ -19,29 +19,35 @@ export function computed(...args) {
     let getter = descriptor.get;
     let setter = descriptor.set;
 
-    if (!descriptor.get) {
-      return;
-    }
-
     // all computed properties should be enumerable
     descriptor.enumerable = true;
 
-    descriptor.get = function() {
-      let table = getCacheForObject(this, computedPropertyCache);
-      if (key in table) {
-        return table[key];
-      }
+    // place an observer on the dependent keys
+    // TODO: currently this only works on own keys
+    for (let depKey of depKeys) {
+      // TODO: update this to use property#get for key chains
 
-      return table[key] = getter.call(this);
-    };
+      // TODO: how do I access the instance here?
+    }
 
-    descriptor.set = function(value) {
-      let table = getCacheForObject(this, computedPropertyCache);
-      setter.call(this, value);
-      table[key, value];
-    };
+    if (getter) {
+      descriptor.get = function() {
+        // let table = getCacheForObject(this, computedPropertyCache);
+        // if (key in table) {
+        //   return table[key];
+        // }
 
-    // TODO: how do we clear cache on dependent keys on change of those??
+        return table[key] = getter.call(this);
+      };
+    }
+    
+    if (setter) {
+      descriptor.set = function(value) {
+        // let table = getCacheForObject(this, computedPropertyCache);
+        setter.call(this, value);
+        // table[key, value];
+      };
+    }
 
     return descriptor;
   };

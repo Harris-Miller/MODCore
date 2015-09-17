@@ -163,6 +163,7 @@ const observableObject = {
 
 export default function observableMixin(target) {
   addMixin(target, observableObject);
+
   let originalConstructor = target;
 
   Object.defineProperty(target.prototype, 'isObservable', {
