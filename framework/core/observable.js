@@ -145,7 +145,6 @@ const observableObject = {
       }
     }
     else {
-      console.log('is unknown property');
       // if we didn't find a key in the object prototype change, create a setter only by that name
       // so if the property gets a value added to it later, we can handle it properly when it does
       Object.defineProperty(this, key, {

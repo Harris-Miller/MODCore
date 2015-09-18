@@ -13,7 +13,7 @@ export default class Person extends ModObject {
   }
   set full(value) {
     let [first, last] = value.split(' ');
-    this.set('first', first);
-    this.set('last', last);
+    this.first = first;
+    this.last = last;
   }
 }
