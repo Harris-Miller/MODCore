@@ -13,7 +13,8 @@ function Meta(obj) {
   // this.bindings = undefined;
   // this.values = undefined;
 
-  this.values = undefined;
+  this.values = Object.create(null);
+  this.computedKeys = Object.create(null);
 }
 
 export const EMPTY_META = new Meta(null);

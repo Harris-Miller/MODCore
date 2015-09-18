@@ -70,9 +70,12 @@ const observableObject = {
     // even if the key does not exist on this object
     // create an observer for it anyways, as the key may be set in the future
 
+    // look in meta too see if key is a computed property
+    // do different things if it is
+
     // first, change the property descriptor if needed
     // meta.values[key] will not exist if we haven't already
-    let values = (this[meta].values || (this[meta].values = Object.create(null)));
+    let values = this[meta].values;
     
     if (!(key in values)) {
       values[key] = this[key];  

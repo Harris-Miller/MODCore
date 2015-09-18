@@ -22,14 +22,6 @@ export function computed(...depKeys) {
     // all computed properties should be enumerable
     descriptor.enumerable = true;
 
-    // place an observer on the dependent keys
-    // TODO: currently this only works on own keys
-    for (let depKey of depKeys) {
-      // TODO: update this to use property#get for key chains
-
-      // TODO: how do I access the instance here?
-    }
-
     if (getter) {
       descriptor.get = function() {
         // let table = getCacheForObject(this, computedPropertyCache);
@@ -37,7 +29,21 @@ export function computed(...depKeys) {
         //   return table[key];
         // }
 
-        return table[key] = getter.call(this);
+        // on first get, we up observers
+        let computedKeys = this[meta].computedKeys;
+        if (!(key in computedKeys)) {
+          console.log(`${key} being computed for first time!`);
+          computedKeys[key] = depKeys;
+
+          // for (let depKey of depKeys) {
+          //   this.addObserver(depKey, this, function() {
+          //     // fire observer for the computed key
+          //     this.fireObserversForKey(this, key);
+          //   });
+          // }
+        }
+
+        return/* table[key] = */getter.call(this);
       };
     }
     
