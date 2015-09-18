@@ -7,7 +7,7 @@ export default class Person extends ModObject {
     super(instanceProperties);
   }
 
-  // @computed('first', 'last')
+  @computed('first', 'last')
   get full() {
     return `${this.first} ${this.last}`;
   }

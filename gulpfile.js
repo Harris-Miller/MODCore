@@ -26,8 +26,8 @@ gulp.task('lint', function() {
   return gulp.src(srcFiles)
     .pipe(eslint())
     .pipe(eslint.format())
-    .pipe(eslint.failOnError())
-    .pipe(jscs())
+    // .pipe(eslint.failOnError())
+    // .pipe(jscs())
 });
 
 gulp.task('compile', ['clean'], function() {
