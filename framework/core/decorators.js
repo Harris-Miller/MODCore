@@ -10,10 +10,8 @@ import { meta } from './symbols';
 export function computed(...depKeys) {
   return function(target, key, descriptor) {
 
-    console.log(target);
-
     let depKeysCache = getCacheForObject(target, dependentKeysCache);
-    depKeysCache[key] = args;
+    depKeysCache[key] = depKeys;
 
     // only works on getters and setters
     let getter = descriptor.get;
@@ -29,18 +27,18 @@ export function computed(...depKeys) {
         //   return table[key];
         // }
 
-        // on first get, we up observers
+        // on first get, we set up observers
         let computedKeys = this[meta].computedKeys;
+
         if (!(key in computedKeys)) {
-          console.log(`${key} being computed for first time!`);
           computedKeys[key] = depKeys;
 
-          // for (let depKey of depKeys) {
-          //   this.addObserver(depKey, this, function() {
-          //     // fire observer for the computed key
-          //     this.fireObserversForKey(this, key);
-          //   });
-          // }
+          for (let depKey of depKeys) {
+            this.addObserver(depKey, this, function() {
+              // fire observer for the computed key
+              this.notifyPropertyChange(key);
+            });
+          }
         }
 
         return/* table[key] = */getter.call(this);

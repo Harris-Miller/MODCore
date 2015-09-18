@@ -29,7 +29,7 @@ export default class Controller extends ModObject {
 
   _bindElements() {
     this.$bindedElements = this.template.find('[data-bind]');
-    let model = this.get('model');
+    let model = this.model;
 
     this.$bindedElements.each((i, elm) => {
       let $elm = $(elm);
@@ -37,39 +37,36 @@ export default class Controller extends ModObject {
       let to = $elm.data('to') || 'text';
       let of = $elm.data('of');
 
-      if (key in model) {
-        // add data down observer
-        model.addObserver(key, this, function(value) {
-          // console.log(value);
-          if (to === 'text') {
-            $elm.text(value);
-          }
-          else if (to === 'html') {
-            $elm.html(value);
-          }
-          // TODO: error handle `of`
-          else if (to === 'attr') {
-            $elm.attr(of, value);
-          }
-          else if (to === 'prop') {
-            $elm.prop(of, value);
-          }
-        });
-
-        // if element is editable, add action up observer (two-way binding)
-        let tagName = $elm.prop('tagName').toLowerCase();
-        if (editableTags.indexOf(tagName) >= 0) {
-          $elm.on('change, input', function(e) {
-            let value = $elm.val();
-            model.set(key, value);
-          });
+      // add data down observer
+      model.addObserver(key, this, function(value) {
+        if (to === 'text') {
+          $elm.text(value);
         }
+        else if (to === 'html') {
+          $elm.html(value);
+        }
+        // TODO: error handle `of`
+        else if (to === 'attr') {
+          $elm.attr(of, value);
+        }
+        else if (to === 'prop') {
+          $elm.prop(of, value);
+        }
+      });
+
+      // if element is editable, add action up observer (two-way binding)
+      let tagName = $elm.prop('tagName').toLowerCase();
+      if (editableTags.indexOf(tagName) >= 0) {
+        $elm.on('change, input', function(e) {
+          let value = $elm.val();
+          model[key] = value;
+        });
       }
     });
   }
 
   render() {
-    let model = this.get('model');
+    let model = this.model;
     this.$bindedElements.each((i, elm) => {
       let $elm = $(elm);
       let key = $elm.data('bind');
@@ -77,7 +74,7 @@ export default class Controller extends ModObject {
       let of = $elm.data('of');
 
       if (key in model) {
-        let value = model.get(key);
+        let value = model[key];
         // console.log(value);
         if (to === 'text') {
           $elm.text(value);
@@ -98,6 +95,7 @@ export default class Controller extends ModObject {
 
   _addModelChangeObserver() {
     this.addObserver('model', this, function() {
+      this._bindElements();
       this.render();
     });
   }

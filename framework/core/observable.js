@@ -15,7 +15,8 @@ import {
 import {
   isNone,
   isPlainObject,
-  isEmptyObject
+  isEmptyObject,
+  getPropertyOwner
 } from '../helpers/util';
 
 /**
@@ -50,12 +51,7 @@ function getObserversForKey(map, key) {
  *
  */
 function fireObserversForKey(obj, key) {
-  let cache = getObjectCache(obj);
-  let observers = getObserversForKey(cache, key);
-
-  for (let { context, method } of observers) {
-    method.call(context, obj.get(key));
-  }
+  
 }
 
 /**
@@ -67,28 +63,114 @@ const observableObject = {
 
   addObserver(key, context, method) {
 
-    // even if the key does not exist on this object
-    // create an observer for it anyways, as the key may be set in the future
+    // observers are placed on keys depending upon if the key is a value or if they are a computed property
 
-    // look in meta too see if key is a computed property
-    // do different things if it is
+    // first check if the key is a computed property
+    if (key in this[meta].computedKeys) {
+      // TODO: all computed properties are already set up for observation
+      // we just need to add the context, and method to the observersForKey cache
 
-    // first, change the property descriptor if needed
-    // meta.values[key] will not exist if we haven't already
-    let values = this[meta].values;
+      return;
+    }
     
-    if (!(key in values)) {
-      values[key] = this[key];  
+    // next we need to get the key's descriptor
+    let propOwner;
+    let keyDescriptor;
+    // to do this, we need to determine first who owns the key so we can get it's descriptor
+    // first look at the current instance
+    if (this.hasOwnProperty(key)) {
+      propOwner = this;
+      keyDescriptor = Object.getOwnPropertyDescriptor(this, key);
+    }
+    // if not, look down the prototype change
+    else {
+      propOwner = getPropertyOwner(Object.getPrototypeOf(this).constructor, key);
+      if (propOwner) {
+        keyDescriptor = Object.getOwnPropertyDescriptor(propOwner, key);
+      }
+    }
 
+    let values = this[meta].values;
+
+    // if we found a descriptor, the property exists on the object
+    // so determine if it is value or getter/setter
+    if (keyDescriptor) {
+
+      if (keyDescriptor.hasOwnProperty('value')) {
+        // if it is a value, save the current value to meta data
+        values[key] = this[key];
+
+        // then, on `this` (not on propOwner, remember that's a prototype object, not an instance of the current type)
+        // defineProperty with a get/set to proxy to meta data for the value and call observer functions along with
+        Object.defineProperty(this, key, {
+          configurable: true,
+          enumerable: true,
+          get: function() {
+            return values[key];
+          },
+          set: function(value) {
+            values[key] = value;
+            this.notifyPropertyChange(key);
+            return value;
+          }
+        });
+      }
+      else {
+        // if it is a getter/setter, save the getter and setters, and reset them so the originals are called
+        // AND we call the observer functions along with, only if get and/or set we defined on the oringal descriptor
+
+        let desc = {
+          configurable: true,
+          enumerable: true
+        };
+
+        let getter = keyDescriptor.get;
+        let setter = keyDescriptor.set;
+
+        if (getter) {
+          desc.get = function() {
+            return getter.call(this);
+          }
+        }
+
+        if (setter) {
+          desc.set = function(value) {
+            setter.call(this, value);
+            this.notifyPropertyChange(key);
+            return value;
+          }
+        }
+
+        Object.defineProperty(this, key, desc);
+      }
+    }
+    else {
+      console.log('is unknown property');
+      // if we didn't find a key in the object prototype change, create a setter only by that name
+      // so if the property gets a value added to it later, we can handle it properly when it does
       Object.defineProperty(this, key, {
         configurable: true,
-        enumerable: true,
-        get: function() {
-          return values[key];
-        },
+        enumerable: false,
         set: function(value) {
+          // take the current value and stash it in cache
           values[key] = value;
-          fireObserversForKey(this, key);
+
+          // then overwrite the current property descriptor
+          Object.defineProperty(this, key, {
+            configurable: true,
+            enumerable: true,
+            get: function() {
+              return values[key];
+            },
+            set: function(value) {
+              values[key] = value;
+              this.notifyPropertyChange(key);
+              return value;
+            }
+          });
+
+          // and notifyPropertyChange for first time set
+          this.notifyPropertyChange(key);
           return value;
         }
       });
@@ -114,23 +196,23 @@ const observableObject = {
     }
   },
 
-  get(key) {
-    let rtn = getProp(this, key);
-    // if plan object, wrap in CoreObject
-    if (isPlainObject(rtn)) {
-      this.key = rtn = new ModObject(rtn);
-    }
-    return rtn;
-  },
+  // get(key) {
+  //   let rtn = getProp(this, key);
+  //   // if plan object, wrap in CoreObject
+  //   if (isPlainObject(rtn)) {
+  //     this.key = rtn = new ModObject(rtn);
+  //   }
+  //   return rtn;
+  // },
 
-  set(key, value) {
-    setProp(this, key, value);
-    // the set may be a key chain (eg: 'model.first');
-    // we need to get back the actual object the final key lives on
-    // and fireObserversForKey on THAT object and key
-    fireObserversForKey(this, key);
-    return value;
-  },
+  // set(key, value) {
+  //   setProp(this, key, value);
+  //   // the set may be a key chain (eg: 'model.first');
+  //   // we need to get back the actual object the final key lives on
+  //   // and fireObserversForKey on THAT object and key
+  //   fireObserversForKey(this, key);
+  //   return value;
+  // },
 
   getProperties(...keys) {
     if (!keys.length) {
@@ -161,6 +243,15 @@ const observableObject = {
     }
 
     return obj;
+  },
+
+  notifyPropertyChange(keyName) {
+    let cache = getObjectCache(this);
+    let observers = getObserversForKey(cache, keyName);
+
+    for (let { context, method } of observers) {
+      method.call(context, this[keyName]);
+    }
   }
 };
 
@@ -173,33 +264,33 @@ export default function observableMixin(target) {
     value: true
   });
 
-  target.prototype.constructor = function(...args) {
+  // target.prototype.constructor = function(...args) {
 
-    // get the computed properties cache for this
-    let thisComputedPropertyCache = getCacheForObject(this, computedPropertyCache);
+  //   // get the computed properties cache for this
+  //   let thisComputedPropertyCache = getCacheForObject(this, computedPropertyCache);
 
-    // first, figure out all the computed keys for this object and who owns them
-    let keyOwners = findComputedKeys(Object.getPrototypeOf(this).constructor);
+  //   // first, figure out all the computed keys for this object and who owns them
+  //   let keyOwners = findComputedKeys(Object.getPrototypeOf(this).constructor);
 
-    // and for all the owners of the computed keys...
-    for (let owner of keyOwners) {
-      // get the dependentKeysCache for each
-      let cacheForOwner = dependentKeysCache.get(owner.obj);
-      // and for each key in cacheForOwner
-      for (let computedKey in cacheForOwner) {
-        // for each computedKey in cacheForOwn
-        for (let depedentKey of cacheForOwner[computedKey]) {
-          // add an observer for it's dependentKeys
-          this.addObserver(depedentKey, null, function(value) {
-            delete thisComputedPropertyCache[computedKey];
-          });
-        }
-      }
-    }
+  //   // and for all the owners of the computed keys...
+  //   for (let owner of keyOwners) {
+  //     // get the dependentKeysCache for each
+  //     let cacheForOwner = dependentKeysCache.get(owner.obj);
+  //     // and for each key in cacheForOwner
+  //     for (let computedKey in cacheForOwner) {
+  //       // for each computedKey in cacheForOwn
+  //       for (let depedentKey of cacheForOwner[computedKey]) {
+  //         // add an observer for it's dependentKeys
+  //         this.addObserver(depedentKey, null, function(value) {
+  //           delete thisComputedPropertyCache[computedKey];
+  //         });
+  //       }
+  //     }
+  //   }
 
-    // and call the original constructor
-    originalConstructor.call(this, ...args);
-  }
+  //   // and call the original constructor
+  //   originalConstructor.call(this, ...args);
+  // }
 }
 
 function findComputedKeys(obj, owners = []) {
@@ -213,19 +304,4 @@ function findComputedKeys(obj, owners = []) {
   }
   
   return findComputedKeys(obj.prototype, owners);
-}
-
-/**
- *
- *
- *
- */
-function findOwnerOfKey(obj, key) {
-  if (obj === null) {
-    return null;
-  }
-  if (obj.hasOwnProperty(key)) {
-    return obj;
-  }
-  return findOwnerOfKey(obj.prototype, key);
 }

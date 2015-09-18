@@ -18,6 +18,8 @@
 
   <h3>Computed: <span data-bind="full" data-to="text"></span></h3>
 
+  <h3>Prop not yet existing: <span data-bind="unknown" data-to="text"></span></h3>
+  
   <script src="../node_modules/babel-core/external-helpers.js"></script>
   <script src="../node_modules/babel-core/browser-polyfill.js"></script>
   <script src="../bower_components/loader.js/loader.js"></script>
@@ -36,8 +38,7 @@
     });
 
     var metaSymbol = require('core/symbols').meta;
-
-    console.log(me[metaSymbol]);
+    // console.log(me[metaSymbol]);
 
     var controller = new Controller({
       template: 'body',

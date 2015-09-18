@@ -107,3 +107,24 @@ export function isEmptyObject(obj) {
   }
   return true;
 }
+
+/**
+ * Find which proptype on the prototype chain owns a property
+ *
+ * @method getPropertyOwner
+ * @param obj {Object} a prototype object on a class
+ * @param propName {String} the property to find
+ * @return {Object} returns the first prototype in the chain who owns the property
+ */
+export function getPropertyOwner(obj, propName) {
+  // if the obj is null or does not contain the method hasOwnProperty, return null
+  if (isNone(obj) || !obj.hasOwnProperty) {
+    return null;
+  }
+
+  if (obj.hasOwnProperty(propName)) {
+    return obj;
+  }
+
+  return getPropertyOwner(obj.prototype, propName);
+}
