@@ -23,7 +23,7 @@ export default class Controller extends ModObject {
     if (!this.template) {
       throw new Error('A controller must have a template set!')
     } 
-    this.template = jQuery(this.template);
+    this.template = parseTemplate(this.template);
     this._bindElements();
   }
 
