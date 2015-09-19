@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <title>Mocha Tests</title>
-  <link href="../../mode_modules/mocha/mocha.css" rel="stylesheet" />
+  <link href="../node_modules/mocha/mocha.css" rel="stylesheet" />
 </head>
 <body>
   <div id="mocha"></div>
@@ -15,7 +15,10 @@
   <script src="../node_modules/chai/chai.js"></script>
   <script src="../node_modules/mocha/mocha.js"></script>
 
-  <script>mocha.setup('bdd')</script>
+  <script>
+    mocha.setup('bdd');
+    chai.should();
+  </script>
   
   <script src="helpers/util.js"></script>
 
