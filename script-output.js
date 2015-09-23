@@ -1,64 +1,65 @@
 var frag = document.createDocumentFragment();
-var morphs = {}
+var morphs = {};
 var e0 = document.createElement('h2');
 frag.appendChild(e0);
-var e1 = document.createTextNode('{{first}} {{last}}');
+var e1 = document.createTextNode('Hello there, \"');
 e0.appendChild(e1);
-var e2 = document.createTextNode('
-');
-frag.appendChild(e2);
-var e3 = document.createElement('form');
-e3.setAttribute('action', '');
-frag.appendChild(e3);
-var e4 = document.createTextNode('
-  ');
-e3.appendChild(e4);
-var e5 = document.createElement('fieldset');
-morphs['showing'] = [];
-morphs['showing'].push([e5, 'attr', 'class']);
-e5.setAttribute('class', 'info');
-e3.appendChild(e5);
-var e6 = document.createTextNode('
-    ');
-e5.appendChild(e6);
-var e7 = document.createElement('input');
-e7.setAttribute('type', 'text');
+var e2 = document.createTextNode('');
 morphs['first'] = [];
-morphs['first'].push([e7, 'attr', 'value']);
-e7.setAttribute('value', '');
-e7.setAttribute('name', 'first');
-e5.appendChild(e7);
-var e8 = document.createTextNode('
-    ');
-e5.appendChild(e8);
-var e9 = document.createElement('br');
-e5.appendChild(e9);
-var e10 = document.createTextNode('
-    ');
-e5.appendChild(e10);
+morphs['first'].push([e2, 'text']);
+e0.appendChild(e2);
+var e3 = document.createTextNode(' ');
+e0.appendChild(e3);
+var e4 = document.createTextNode('');
+morphs['last'] = [];
+morphs['last'].push([e4, 'text']);
+e0.appendChild(e4);
+var e5 = document.createTextNode('!\"');
+e0.appendChild(e5);
+var e6 = document.createTextNode('\n');
+frag.appendChild(e6);
+var e7 = document.createElement('form');
+e7.setAttribute('action', '');
+frag.appendChild(e7);
+var e8 = document.createTextNode('\n  ');
+e7.appendChild(e8);
+var e9 = document.createElement('fieldset');
+morphs['showing'] = [];
+morphs['showing'].push([e9, 'attr', 'class']);
+e9.setAttribute('class', 'info');
+e7.appendChild(e9);
+var e10 = document.createTextNode('\n    ');
+e9.appendChild(e10);
 var e11 = document.createElement('input');
 e11.setAttribute('type', 'text');
-morphs['last'] = [];
-morphs['last'].push([e11, 'attr', 'value']);
+morphs['first'].push([e11, 'attr', 'value']);
 e11.setAttribute('value', '');
-e11.setAttribute('name', 'last');
-e5.appendChild(e11);
-var e12 = document.createTextNode('
-    ');
-e5.appendChild(e12);
+e11.setAttribute('name', 'first');
+e9.appendChild(e11);
+var e12 = document.createTextNode('\n    ');
+e9.appendChild(e12);
 var e13 = document.createElement('br');
-e5.appendChild(e13);
-var e14 = document.createTextNode('
-    ');
-e5.appendChild(e14);
+e9.appendChild(e13);
+var e14 = document.createTextNode('\n    ');
+e9.appendChild(e14);
 var e15 = document.createElement('input');
 e15.setAttribute('type', 'text');
-e15.setAttribute('value', '31');
-e15.setAttribute('name', 'age');
-e5.appendChild(e15);
-var e16 = document.createTextNode('
-  ');
-e5.appendChild(e16);
-var e17 = document.createTextNode('
-');
-e3.appendChild(e17);
+morphs['last'].push([e15, 'attr', 'value']);
+e15.setAttribute('value', '');
+e15.setAttribute('name', 'last');
+e9.appendChild(e15);
+var e16 = document.createTextNode('\n    ');
+e9.appendChild(e16);
+var e17 = document.createElement('br');
+e9.appendChild(e17);
+var e18 = document.createTextNode('\n    ');
+e9.appendChild(e18);
+var e19 = document.createElement('input');
+e19.setAttribute('type', 'text');
+e19.setAttribute('value', '31');
+e19.setAttribute('name', 'age');
+e9.appendChild(e19);
+var e20 = document.createTextNode('\n  ');
+e9.appendChild(e20);
+var e21 = document.createTextNode('\n');
+e7.appendChild(e21);

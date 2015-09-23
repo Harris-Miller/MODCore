@@ -2,6 +2,7 @@
 
 const HTML5Tokenizer = require('simple-html-tokenizer');
 const fs = require('fs');
+const htmlEncode = require('htmlencode').htmlEncode;
 
 let hbs = fs.readFileSync('html-tokenizer-test-2.hbs', 'utf8');
 
@@ -64,11 +65,24 @@ function scrubTokens(tokens) {
 
 }
 
+
+function escapeChars(str) {
+  const rSingleQuote = /\'/g;
+  const rDoubleQuote = /\"/g;
+  const rNewline = /\n/g;
+
+  return str
+    .replace(rSingleQuote, '\\\'')
+    .replace(rDoubleQuote, '\\\"')
+    .replace(rNewline, '\\n');
+    // TODO: determine if anything else needs to be 
+}
+
 function createScript(tokens) {
   var nodes = 0;
 
   script.push('var frag = document.createDocumentFragment();');
-  script.push('var morphs = {}');
+  script.push('var morphs = {};');
 
   var current = 'frag';
 
@@ -77,12 +91,11 @@ function createScript(tokens) {
     let variable;
 
     if (type === 'Chars') {
-      variable = 'e' + nodes++;
-      let chars = token.chars;
-      
-      // TODO: figure out how to separate the chars by `{{value}}`
-      // eg: "Hello there, {{first}} {{last}}. How are you!"
-      // -> [
+
+      // The process below does this:
+      //
+      // "Hello there, {{first}} {{last}}. How are you!"
+      // => [
       //      ['string', 'Hello there, '],
       //      ['mustache', 'first'],
       //      ['string', ' '],
@@ -90,29 +103,62 @@ function createScript(tokens) {
       //      ['string', ' How are you!']
       //    ]
       //
-      // this way we can look through the tuples, and get and output of this:
-      //
-      // var e1 = document.createTextNode('Hello there, ');
-      // var frag.appendChild(e1);
-      // var e2 = document.createTextNode('');
-      // morphs['first'].push([e2, 'text']);
-      // var frag.appendChild(e2);
-      // var e3 = document.createTextNode(' ');
-      // var frag.appendChild(e3);
-      // var e4 = document.createTextNode('');
-      // morphs['last'].push([e4, 'text']);
-      // var frag.appendChild(e4);
-      // var e5 = document.createTextNode('. How are you!');
-      // var frag.appendChild(e5);
-      //
-      // by separating out the static and variable portions of text like this,
-      // we'll never have to re-render the entire sentence, only the mustache parts
 
-      // TODO: html encode token.chars !!!
-      script.push(`var ${variable} = document.createTextNode('${token.chars}');`);
-      script.push(`${current}.appendChild(${variable});`);
+      var chars = escapeChars(token.chars);
 
-      return;
+      let mustacheFound = false;
+      let components = [];
+      let loc = 0;
+      let length = chars.length;
+
+      while(true) {
+        let indexOf = chars.indexOf(mustacheFound ? '}}' : '{{');
+
+        if (indexOf === -1) {
+          if (chars.length !== 0) {
+            components.push(['string', chars]);
+          }
+          break;
+        }
+        if (mustacheFound) {
+          indexOf += 2;
+        }
+
+        let str = chars.substr(loc, indexOf);
+        chars = chars.substr(indexOf);
+
+        if (str !== '') {
+          components.push([mustacheFound ? 'mustache' : 'string', str]);
+        }
+
+        mustacheFound = !mustacheFound;
+      }
+
+      // we then use the array of tuples to add correct lines of code to scripts
+
+      components.forEach(comp => {
+        variable = 'e' + nodes++;
+        let type = comp[0];
+        let val = comp[1];
+
+        if (type === 'mustache') {
+          script.push(`var ${variable} = document.createTextNode('');`);
+
+          val = val.match(/^\{\{(.*?)\}\}$/)[1];
+
+          if (morphs.indexOf(val) === -1) {
+            morphs.push(val);
+            script.push(`morphs['${val}'] = [];`);
+          }
+            
+          script.push(`morphs['${val}'].push([${variable}, 'text']);`);
+        }
+        else {
+          script.push(`var ${variable} = document.createTextNode('${val}');`);
+        }
+
+        script.push(`${current}.appendChild(${variable});`);
+      });
     }
     else if (type === 'StartTag') {
       variable = 'e' + nodes++;
@@ -125,10 +171,7 @@ function createScript(tokens) {
       if (attrs && Array.isArray(attrs)) {
         attrs.forEach(attr => {
           let name = attr[0];
-          let values = attr[1] // escape ALL the things
-            .replace('\\', '\\\\')
-            .replace('\'', '\\\'')
-            .replace('\"', '\\\"');
+          let values = escapeChars(attr[1]);
 
           // TODO: figure out which keys are properties and which are attributes
 
@@ -167,8 +210,6 @@ function createScript(tokens) {
         stack.push(current);
         current = variable;
       }
-
-      return;
     }
     else if (type === 'EndTag') {
       // when we reach and end tag, pop the stack and set to current
