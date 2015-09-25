@@ -3,6 +3,7 @@ var util = require('helpers/util');
 var expect = chai.expect;
 
 describe('helpers/util', function() {
+  
   describe('#isNone(obj)', function() {
     var isNone = util.isNone;
 
