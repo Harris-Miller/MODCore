@@ -4,7 +4,10 @@
   "launch_in_dev": ["PhantomJS"],
   "launch_in_ci": ["PhantomJS"],
   "src_files": [
-    "node_modules/chai/chai.js",
+  	"node_modules/babel-core/external-helpers.js",
+  	"node_modules/babel-core/browser-polyfill.js",
+  	"bower_components/loader.js/loader.js",
+    "dist/framework.js",
     "tests/**/*.js"
   ]
 }
