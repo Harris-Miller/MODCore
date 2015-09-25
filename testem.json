@@ -1,0 +1,10 @@
+{
+  "framework": "mocha+chai",
+  "parallel": 5,
+  "launch_in_dev": ["PhantomJS"],
+  "launch_in_ci": ["PhantomJS"],
+  "src_files": [
+    "node_modules/chai/chai.js",
+    "tests/**/*.js"
+  ]
+}
