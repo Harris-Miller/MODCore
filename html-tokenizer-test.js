@@ -11,8 +11,10 @@ let hbs = fs.readFileSync('html-tokenizer-test-2.hbs', 'utf8');
 
 let tokens = HTML5Tokenizer.tokenize(hbs);
 
-// console.log(tokens);
-// console.log('');
+console.log(tokens);
+console.log('');
+
+return;
 
 let inputs = tokens.filter(tokens => tokens.type === 'StartTag' && (tokens.tagName === 'input' || tokens.tagName === 'fieldset'));
 
