@@ -13,10 +13,10 @@ describe('helpers/util', function() {
     });
 
     it('should return false for anything else', function() {
-      isNone('').should.not.be.true;
-      isNone([]).should.not.be.true;
-      isNone({}).should.not.be.true;
-      isNone(function() {}).should.not.be.true;
+      isNone('').should.be.false;
+      isNone([]).should.be.false;
+      isNone({}).should.be.false;
+      isNone(function() {}).should.be.false;
     });
   });
 
@@ -32,10 +32,10 @@ describe('helpers/util', function() {
     });
 
     it('should return false for a string or array with length, or any object', function() {
-      isEmpty('something').should.not.be.true;
-      isEmpty([1, 2, 3]).should.not.be.true;
-      isEmpty({}).should.not.be.true;
-      isEmpty(function() {}).should.not.be.true;
+      isEmpty('something').should.be.false;
+      isEmpty([1, 2, 3]).should.be.false;
+      isEmpty({}).should.be.false;
+      isEmpty(function() {}).should.be.false;
     });
   });
 
@@ -71,7 +71,7 @@ describe('helpers/util', function() {
     });
 
     it('should return false for when an enumerable key is present', function() {
-      isEmptyObject({value: 1}).should.not.be.true;
+      isEmptyObject({value: 1}).should.be.false;
     });
 
     it('should return true for `null`, `undefined`, empty string, numbers, or empty array', function() {
@@ -84,8 +84,8 @@ describe('helpers/util', function() {
     });
 
     it ('should return false for a string or array with length', function() {
-      isEmptyObject('something').should.not.be.true;
-      isEmptyObject([1,2,3]).should.not.be.true;
+      isEmptyObject('something').should.be.false;
+      isEmptyObject([1,2,3]).should.be.false;
     });
   });
 
