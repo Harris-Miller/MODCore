@@ -5,7 +5,7 @@
   <title>Babel RequireJs Test</title>
 </head>
 <body>
-
+  <!--
   <h1>Observing Tests</h1>
 
   <h2>Hello! <span data-bind="first" data-to="text"></span> <span data-bind="last" data-to="text"></span></h2>
@@ -19,6 +19,7 @@
   <h3>Computed: <span data-bind="full" data-to="text"></span></h3>
 
   <h3>Prop not yet existing: <span data-bind="unknown" data-to="text"></span></h3>
+  -->
   
   <script src="../node_modules/babel-core/external-helpers.js"></script>
   <script src="../node_modules/babel-core/browser-polyfill.js"></script>
@@ -51,14 +52,14 @@
       </fieldset>
     </form>
   </script>
-
+  <!--
   <script>
     var Person = require('person')['default'];
-    var Controller = require('core/controller')['default'];
+    var Controller = require('core/controller')['OldController'];
 
     var me = new Person('Harris', 'Miller');
 
-    var metaSymbol = require('core/symbols').meta;
+    // var metaSymbol = require('core/symbols').meta;
     // console.log(me[metaSymbol]);
 
     var controller = new Controller('body', me);
@@ -72,6 +73,28 @@
 
     compiler.compile();
   </script>
-  
+  -->
+
+  <script>
+    var container = require('container/container')['default'];
+
+    var objectCompiler = require('templates/compilers/to-object')['default'];
+    var templateCompiler = require('templates/compiler')['default'];
+    var template = $('#mustache-template').get(0).innerHTML;
+    var compiler = new templateCompiler(template, objectCompiler);
+    compiler.compile();
+
+    container.register('templates', 'mustache-template', compiler.output);
+
+
+    var Person = require('person')['default'];
+    var Controller = require('core/controller')['default'];
+
+    var me = new Person('Harris', 'Miller');
+
+    var personController = new Controller('body', 'mustache-template', me);
+
+
+  </script>
 </body>
 </html>

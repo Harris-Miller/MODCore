@@ -1,6 +1,9 @@
 /* global $ */
 
 import ModObject from './mod-object';
+import container from '../container/container';
+import TemplateCompiler from '../templates/compiler';
+import ObjectCompiler from '../templates/compilers/to-object';
 
 const editableTags = [
   'input',
@@ -8,15 +11,87 @@ const editableTags = [
   'select'
 ];
 
+export default class Controller extends ModObject {
+  constructor(parent, templateName, model) {
+    super();
+
+    this.$parent = $(parent);
+    this.model = model;
+
+    this.template = null;
+    this.compiler = null;
+    this.compiledTemplate = null;
+
+    this._normalizeModel();
+    this._lookupTemplate(templateName);
+
+    this._processBindings();
+
+    this.render();
+  }
+
+  _normalizeModel() {
+    if (!(this.model instanceof ModObject)) {
+      this.model = new ModObject(this.model);
+    }
+  }
+
+  _lookupTemplate(templateName) {
+    this.template = container.lookup('templates', templateName);
+  }
+
+  _processBindings() {
+    let morphs = this.template.morphs;
+
+    for (let propName in morphs) {
+      morphs[propName].forEach(tuple => {
+        let [ node, bindingType ] = tuple;
+
+        // TODO: handle individual binding types
+        switch(bindingType) {
+          case 'text':
+          default:
+            this._bindPropToText(propName, node);
+            break;
+        }
+      })
+    }
+  }
+
+  _bindPropToText(propName, node) {
+    let value = this.model[propName];
+    if (value === null || value === undefined) {
+      value = '';
+    }
+
+    node.textContent = value;
+
+    this.model.addObserver(propName, this, function(newValue) {
+      node.textContent = newValue;
+    });
+  }
+
+  render() {
+    this.$parent.append(this.template.frag);
+  }
+
+}
+
+
+
+
+
+
+
 /**
  *
  *
- * @class Controller
+ * @class OldController
  * @constructor
  * @param template
  * @param model
  */
-export default class Controller extends ModObject {
+export class OldController extends ModObject {
   constructor(template, model) {
     super();
 
