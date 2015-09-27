@@ -1,4 +1,8 @@
 
+import DataHandler from '../handlers/data';
+
+const dataHandler = new DataHandler();
+
 const stack = Symbol['stack'];
 
 export default class TemplateObjectCompiler {
@@ -39,5 +43,21 @@ export default class TemplateObjectCompiler {
 
   handleEndTag(token) {
     this.current = this[stack].pop();
+  }
+
+  handleStartExp(token) {
+    // determine what handler should be used
+
+    // if empty attributes
+    if (!token.attributes.length) {
+      // either component or direct binding
+      // TODO: check registry if component
+      dataHandler.bind(this.current, this.morphs, token);
+    }
+
+  }
+
+  handleEndExp(token) {
+
   }
 }

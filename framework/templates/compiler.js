@@ -29,11 +29,11 @@ const selfClosingTags = [
  * @param delegate {Object} delegate object to perform actions on during parsing
  */
 export default class Compiler extends ModObject {
-  constructor(template, delegate) {
+  constructor(template, Delegate) {
     super();
 
     this.template = template;
-    this.delegate = new delegate();
+    this.delegate = new Delegate();
     this.output = null;
   }
 
@@ -55,10 +55,12 @@ export default class Compiler extends ModObject {
 
   _scrubTokens() {
     this.tokens.forEach(token => {
-      token.tagName && (token.tagName = token.tagName.toLowerCase());
+      if (token.tagName) {
+        token.tagName = token.tagName.toLowerCase();
+      }
 
       if (!token.selfClosing && selfClosingTags.indexOf(token.tagName) !== -1) {
-        token.selfClosing = true
+        token.selfClosing = true;
       }
     });
   }
@@ -77,9 +79,11 @@ export default class Compiler extends ModObject {
         case 'EndTag':
           this.delegate.handleEndTag(token);
           break;
+        case 'StartExp':
+          this.delegate.handleStartExp(token);
+          break;
         default:
           throw new Error('WHOA! unsupported token type!');
-          break;
       }
     });
   }

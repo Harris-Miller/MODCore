@@ -66,7 +66,7 @@
     var objectCompiler = require('templates/compilers/to-object')['default'];
     var templateCompiler = require('templates/compiler')['default'];
 
-    var template = $('#html-template').get(0).innerHTML;
+    var template = $('#mustache-template').get(0).innerHTML;
 
     var compiler = new templateCompiler(template, objectCompiler);
 
