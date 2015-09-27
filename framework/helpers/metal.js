@@ -27,7 +27,7 @@ export const NULL_DESC = {
   writable: true,
   enumerable: false,
   value: null
-}
+};
 
 export const META_PROPERTY = {
   name: '__meta__',
@@ -39,8 +39,8 @@ export function canInvoke(obj, methodName) {
 }
 
 export function tryInvoke(obj, methodName, ...args) {
-  if (canInvoke(obj, methodname)) {
-    return args.length ? obj[methodName](...arg) : obj[methodName]();
+  if (canInvoke(obj, methodName)) {
+    return args.length ? obj[methodName](...args) : obj[methodName]();
   }
 }
 

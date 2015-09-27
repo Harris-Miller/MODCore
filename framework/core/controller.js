@@ -1,5 +1,12 @@
+/* global $ */
 
 import ModObject from './mod-object';
+
+const editableTags = [
+  'input',
+  'textarea',
+  'select'
+];
 
 /**
  *
@@ -30,7 +37,7 @@ export default class Controller extends ModObject {
 
   _parseTemplate() {
     if (!this.template) {
-      throw new Error('A controller must have a template set!')
+      throw new Error('A controller must have a template set!');
     } 
     this.template = parseTemplate(this.template);
     this._bindElements();
@@ -120,11 +127,5 @@ export default class Controller extends ModObject {
 function parseTemplate(template) {
   // TODO:
   // for right now, just wrap whatever is passed in jQuery
-  return jQuery(template);
+  return $(template);
 }
-
-const editableTags = [
-  'input',
-  'textarea',
-  'select'
-];

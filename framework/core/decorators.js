@@ -60,5 +60,5 @@ export function computed(...depKeys) {
 export function observe(...args) {
   return function(target, key, descriptor) {
 
-  }
+  };
 }

@@ -91,7 +91,7 @@ function defineGetSetObserverDescriptor(obj, propName, propDesc) {
   if (getter) {
     desc.get = function() {
       return getter.call(obj);
-    }
+    };
   }
 
   if (setter) {
@@ -99,7 +99,7 @@ function defineGetSetObserverDescriptor(obj, propName, propDesc) {
       setter.call(obj, value);
       obj.notifyPropertyChange(propName);
       return value;
-    }
+    };
   }
 
   Object.defineProperty(obj, propName, desc);
@@ -215,7 +215,7 @@ const observableObject = {
     }
 
     for (let key in obj) {
-      set(obj, obj[key]);
+      this[key] = obj[key]; // TODO: verify this!
     }
 
     return obj;
