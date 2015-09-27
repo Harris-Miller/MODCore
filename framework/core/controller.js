@@ -1,6 +1,14 @@
 
 import ModObject from './mod-object';
 
+/**
+ *
+ *
+ * @class Controller
+ * @constructor
+ * @param template
+ * @param model
+ */
 export default class Controller extends ModObject {
   constructor(template, model) {
     super();

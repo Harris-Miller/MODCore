@@ -30,19 +30,16 @@
   <script src="../../simple-html-tokenizer/dist/simple-html-tokenizer.js"></script>
   <script src="../dist/framework.js"></script>
 
-  <script>
-    var Person = require('person')['default'];
-    var Controller = require('core/controller')['default'];
-
-    var me = new Person('Harris', 'Miller');
-
-    var metaSymbol = require('core/symbols').meta;
-    // console.log(me[metaSymbol]);
-
-    var controller = new Controller('body', me);
+  <script id="html-template" type="text/x-handlebars">
+    <div id="container">
+      <h3>Test heading</h3>
+      some text
+      <input type="text" placeholder="Placeholder Text">
+      <p>A paragraph</p>
+    </div>
   </script>
 
-  <script type="text/x-handlebars">
+  <script id="mustache-template" type="text/x-handlebars">
     <h2>Hello there, "{{first}} {{last}}!"</h2>
     <form action="">
       <fieldset class="info {{showing}}">
@@ -54,5 +51,27 @@
       </fieldset>
     </form>
   </script>
+
+  <script>
+    var Person = require('person')['default'];
+    var Controller = require('core/controller')['default'];
+
+    var me = new Person('Harris', 'Miller');
+
+    var metaSymbol = require('core/symbols').meta;
+    // console.log(me[metaSymbol]);
+
+    var controller = new Controller('body', me);
+
+    var objectCompiler = require('templates/compilers/to-object')['default'];
+    var templateCompiler = require('templates/compiler')['default'];
+
+    var template = $('#html-template').get(0).innerHTML;
+
+    var compiler = new templateCompiler(template, objectCompiler);
+
+    compiler.compile();
+  </script>
+  
 </body>
 </html>
