@@ -2,10 +2,11 @@
 import ModObject from './mod-object';
 
 export default class Controller extends ModObject {
-  constructor(instanceProperties) {
-    super(instanceProperties);
+  constructor(template, model) {
+    super();
 
-    // console.log(this);
+    this.template = template;
+    this.model = model;
 
     this._normalizeModel();
     this._parseTemplate();

@@ -34,18 +34,12 @@
     var Person = require('person')['default'];
     var Controller = require('core/controller')['default'];
 
-    var me = new Person({
-      first: 'Harris',
-      last: 'Miller'
-    });
+    var me = new Person('Harris', 'Miller');
 
     var metaSymbol = require('core/symbols').meta;
     // console.log(me[metaSymbol]);
 
-    var controller = new Controller({
-      template: 'body',
-      model: me
-    });
+    var controller = new Controller('body', me);
   </script>
 
   <script type="text/x-handlebars">
