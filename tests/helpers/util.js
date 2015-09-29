@@ -1,8 +1,11 @@
 
 var util = require('helpers/util');
-var expect = chai.expect;
 
 describe('helpers/util', function() {
+
+  it('should exist', function() {
+    util.should.not.be.null;
+  });
   
   describe('#isNone(obj)', function() {
     var isNone = util.isNone;
