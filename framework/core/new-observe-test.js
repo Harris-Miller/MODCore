@@ -1,105 +1,84 @@
 
-const observerMap = new Map();
-
-/**
- * A single callback will be sent to Object.observe for any object
- * that callback will then look at assigned observers in a map
- * and fire them based on the key being looked at on hte observed object
- *
- *
- */
-function createObservation(obj, key, type, context, expression) {
-
-  // TODO: assert that `type` is one of ["add", "update", "delete", "reconfigure", "setPrototype", "preventExtensions"]
-
-  if (!observerMap.has(obj)) {
-    createObserverMapValue(obj);
-  }
-
-  let mapValue = observermap.get(obj);
-  let typeHash = mapValue.types;
-  let typePropNameHash = typeHash[type];
-
-  // now we add to typePropNameHash
-  // first create a prop on typePropNameHash for key if it doesn't already exist
-  if (!typePropNameHash.hasOwnProperty(key)) {
-    typePropNameHash[key] = [];
-  }
-
-  // then add the context and expression
-  typePropNameHash[key].push({
-    context,
-    expression
-  });
-}
-
-function createObserverMapValue(obj) {
-   let mapValue = {
-       // this is the object that we will send into Object.observe
-       // we want to keep a reference too it for when we deconstruct an object later on
-      callback = createObserverCallback(obj),
-      // this is a hash of propertynames that house individual callbacks from other objects
-      // each key of the hash will contain an object of context and an expression
-      types = generateChangeTypesHash()
-    };
-
-    observerMap.set(obj, mapValue);
-
-    Object.observe(obj, mapValue.callback)
-}
-
-function generateChangeTypesHash() {
-  return {
-    add: {},
-    update: {},
-    delete: {},
-    reconfigure: {},
-    setPrototype: {}
-  };
-}
-
-function createObserverCallback(obj) {
-  // this creates a functions to be stored later so it can be used for Object.unobserve
-
-  return function(changes) {
-
-    let objCallbacks = observerMap(obj);
-
-    changes.forEach(change => {
-      let { name, type } = change;
-
-      // for adds, we want to fire both adds and updates
-      // this is so observers for properties that may not exist will get fires when first added
-      // it is important for data binding
-
-      if (type === 'add') {
-        // fire both add and update
-        objCallbacks.add.forEach(hash => {
-          hash.expression.call(hash.context, change);
-        });
-        objCallbacks.update.forEach(hash => {
-          hash.expression.call(hash.context, change);
-        });
-      }
-      else {
-        // otherwise, fire the callbacks for the type
-        objCallbacks[type].forEach(hash => {
-          hash.expression.call(hash.context, change);
-        });
-      }
-    });
-  }
-}
-
+// an object (target) can be observed by other object (listener)
+// when a target object changes, it notifies the listner objects that are listening too it
+// the listener objects are responsible for their own callbacks
 
 const observableObject = {
 
-  // when adding an observer, you choose the obj TOO observe
-  addObserver(obj, key, type, expression) {
-    createObservation(obj, key, type, this, expression);
+  /**
+   * A week map of targets that this object is observing. If those objects are GC'd, we automatically stop observing them!
+   *
+   * @property observer
+   * @type WeakMap
+   *
+   * TODO: not sure if it should live here or not?
+   * probable needs to be part of constructor for class this is being mixed into
+   */
+  observers: new WeakMap(),
+
+  /**
+   * A set of objects that are listening to this object. Will iterate through them when notifying changes
+   *
+   *
+   */
+  listeners: new Set(),
+
+  _boundObserverCallback: null,
+
+  /**
+   * Adds a listener object to target. A listener object can listen to itself
+   *
+   * @method addListen
+   * @param obj {Object}
+   */
+  addListener(obj) {
+    // if this.listeners.size === 0, safe to assume we need to add the observer
+    if (!this.listeners.size) {
+      Object.observe(this, (this._boundObserverCallback = this.notifyListeners.bind(this))); // TODO, save ref to bound function?
+    }
+
+    this.listeners.add(obj);
   },
 
-  removeObserver(obj, key, type, expression) {
+  removeListener(obj) {
+    this.listeners.delete(obj);
+
+    // if there are no more listeners remaning, unobserve this object
+    if (!this.listeners.size) {
+      Object.unobserve(this, this._boundObserverCallback);
+    }
+  },
+
+  // TODO: maybe have this more private
+  notifyListeners(changes) {
+    this.listeners.forEach(listener => {
+      changes.forEach(change => {
+        listener.observedObjectChanged(change);
+      });
+    })
+  }
+
+  /**
+   * Adds an observer onto a target
+   *
+   *
+   */
+  addObserver(target, propName, callback) {
     
+  },
+
+  removeObserver(target, propName, callback) {
+
+  },
+
+  observedObjectChanged(change) {
+    let { name } = change;
+
+    let propNames = this.observers.get(object);
+    if (propNames && (name in propNames)) {
+      propNames[name].forEach(callback => {
+        callback.call(this, change);
+      });
+    }
   }
 }
