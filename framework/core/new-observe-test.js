@@ -64,15 +64,42 @@ const observableObject = {
    *
    */
   addObserver(target, propName, callback) {
-    
+    target.addListener(this);
+
+    if (!this.observers.has(target)) {
+      this.observers.set(target, {}); // the object literal will be key'd by propName and contain and array of callbacks to fire
+    }
+
+    var targetCallbacks = this.observers.get(target);
+    if (!(propName in targetCallbacks)) {
+      targetCallbacks[propName] = [];
+    }
+
+    targetCallbacks[propName].push(callback);
   },
 
   removeObserver(target, propName, callback) {
+    if (this.observers.has(target)) {
+      let targetCallbacks = this.observers.get(target);
+      let indexOfCallback = -1;
 
+      if ((propName in targetCallbacks) && (indexOfCallback = targetCalbacks[propName].indexOf(callback)) !== -1) {
+        targetCalbacks[propName].splice(indexOfCallback, 1);
+
+        // do some manual Garbage collection
+        if (!targetCallbacks.propName.length) {
+          delete targetCallbacks.propName;
+        }
+
+        if (!targetCallbacks.length) {
+          this.observers.remove(target);
+        }
+      }
+    }
   },
 
   observedObjectChanged(change) {
-    let { name } = change;
+    let { name, object } = change;
 
     let propNames = this.observers.get(object);
     if (propNames && (name in propNames)) {
