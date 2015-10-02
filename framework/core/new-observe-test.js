@@ -56,7 +56,7 @@ const observableObject = {
         listener.observedObjectChanged(change);
       });
     })
-  }
+  },
 
   /**
    * Adds an observer onto a target
@@ -109,3 +109,5 @@ const observableObject = {
     }
   }
 }
+
+export default observableObject;

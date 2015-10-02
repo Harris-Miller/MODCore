@@ -1,7 +1,6 @@
 const gulp = require('gulp');
 const babel = require('gulp-babel');
-const rollup = require('gulp-rollup');
-const esperanto = require('gulp-esperanto');
+const rollup = require('rollup');
 const del = require('del');
 const jshint = require('gulp-jshint');
 const stylish = require('jshint-stylish');
@@ -9,6 +8,7 @@ const jscs = require('gulp-jscs');
 const sourcemaps = require('gulp-sourcemaps');
 const concat = require('gulp-concat');
 const uglify = require('gulp-uglify');
+const file = require('gulp-file');
 const path = require('path');
 
 // custom gulp task
@@ -29,6 +29,31 @@ gulp.task('lint', function() {
     .pipe(jshint.reporter(stylish));
     // .pipe(eslint.failOnError())
     // .pipe(jscs())
+});
+
+gulp.task('rollup', ['clean'], function(done) {
+
+  return rollup.rollup({
+    entry: 'framework/entry.js'
+  }).then(function(bundle) {
+
+    // FUCK! rollup does not support ES7 decorators!!!
+    var result = bundle.generate({
+      format: 'umd',
+      moduleName: 'MODCore',
+      dest: 'dist/framework.js'
+    });
+
+    // TODO: need to figure out how to add the generated sourcemap in here!
+    return file('framework.js', result.code, { src: true })
+      .pipe(babel({
+        stage: 0,
+        externalHelpers: true,
+        blacklist: ['es6.modules', 'strict']
+      }))
+      .pipe(gulp.dest(destinationFolder));
+  });
+
 });
 
 gulp.task('compile', ['clean'], function() {
