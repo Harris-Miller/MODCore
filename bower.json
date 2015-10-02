@@ -19,6 +19,7 @@
   "dependencies": {
     "almond": "~0.3.1",
     "eventemitter2": "~0.4.14",
-    "loader.js": "ember-cli/loader.js#3.2.1"
+    "loader.js": "ember-cli/loader.js#3.2.1",
+    "object.observe": "~0.2.4"
   }
 }
