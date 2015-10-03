@@ -6,7 +6,9 @@
 const observableObject = {
 
   /**
-   * A week map of targets that this object is observing. If those objects are GC'd, we automatically stop observing them!
+   * A map of targets that this object is observing.
+   * When we manually garbage collect an object, we will iterate through the Map's keys and remove this object
+   * from those objects @listeners Set
    *
    * @property observer
    * @type WeakMap
@@ -14,7 +16,7 @@ const observableObject = {
    * TODO: not sure if it should live here or not?
    * probable needs to be part of constructor for class this is being mixed into
    */
-  observers: new WeakMap(),
+  observers: new Map(),
 
   /**
    * A set of objects that are listening to this object. Will iterate through them when notifying changes
